@@ -1,0 +1,144 @@
+function data()
+    return {
+        type = "STREET_CONSTRUCTION",
+        description = {
+            name = _("TFMR modules Urban Expwy Start"),
+            description = _(" "),
+        },
+        availability = {
+            yearFrom = 1920,
+            yearTo = 9999
+        },
+        skipCollision = true,
+        params = {
+            {key = "eproads_modulechoice", name = "Modules", values = {_("2=1+1"), _("3=1+2"), _("3=2+1"), _("4=2+2"), _("4=3+1")}, },
+            {key = "eproads_configure", name = "Module Configuration", values = {_("Right"), _("Left")}, },
+            {key = "eproads_length", name = "Length Scaling", uiType = "SLIDER", values = {_("1"), _("1.1"), _("1.2"), _("1.3"), _("1.4"), _("1.5"), _("1.6"), _("1.7"), _("1.8"), _("1.9"), _("2")}, },
+            {key = "eproads_nodeonesnap", name = "Node 1 snapping", uiType = "CHECKBOX", values = {_("0"), _("1")}, },
+            {key = "eproads_nodetwosnap", name = "Node 2 snapping", uiType = "CHECKBOX", values = {_("0"), _("1")}, },
+            {key = "eproads_nodethreesnap", name = "Node 3 snapping", uiType = "CHECKBOX", values = {_("0"), _("1")}, },
+            {key = "eproads_nodefoursnap", name = "Node 4 snapping", uiType = "CHECKBOX", values = {_("0"), _("1")}, },
+            {key = "eproads_nodefivesnap", name = "Node 5 snapping", uiType = "CHECKBOX", values = {_("0"), _("1")}, },
+        },
+        updateFn = function(params)
+            local result = { }
+            local SN1, FN1, SN2, FN2, SN3, FN3, SN4, FN4, SN5, FN5, roadListGround, roadListue, roadList2way, moduleStringList1, moduleStringList2, moduleStringList3, xflip, laneChoiceGround, laneChoiceue, laneChoice2way, groundFaceName, roadName, moduleString, centreString, pedString, side, x, xdisplace, len, n
+    
+            result.edgeLists = { }
+            result.models = { }
+            result.groundFaces = { }
+    
+            if params.eproads_nodeonesnap == 0 then 
+                SN1 = {{ }, { }, }
+                FN1 = {{0}, {1}, }
+            elseif params.eproads_nodeonesnap == 1 then 
+                SN1 = {{0}, {1}, }
+                FN1 = {{ }, { }, }
+            end
+            if params.eproads_nodetwosnap == 0 then 
+                SN2 = {{ }, { }, }
+                FN2 = {{0}, {1}, }
+            elseif params.eproads_nodetwosnap == 1 then 
+                SN2 = {{0}, {1}, }
+                FN2 = {{ }, { }, }
+            end
+            if params.eproads_nodethreesnap == 0 then 
+                SN3 = {{ }, { }, }
+                FN3 = {{0}, {1}, }
+            elseif params.eproads_nodethreesnap == 1 then 
+                SN3 = {{0}, {1}, }
+                FN3 = {{ }, { }, }
+            end
+            if params.eproads_nodefoursnap == 0 then 
+                SN4 = {{ }, { }, }
+                FN4 = {{0}, {1}, }
+            elseif params.eproads_nodefoursnap == 1 then 
+                SN4 = {{0}, {1}, }
+                FN4 = {{ }, { }, }
+            end
+            if params.eproads_nodefivesnap == 0 then 
+                SN5 = {{ }, { }, }
+                FN5 = {{0}, {1}, }
+            elseif params.eproads_nodefivesnap == 1 then 
+                SN5 = {{0}, {1}, }
+                FN5 = {{ }, { }, }
+            end
+            
+            roadListGround = {"eproads/1_lane_oneway_cr.lua", "eproads/2_lane_oneway_cr.lua"}
+            roadListue = {"eproads/1_lane_oneway_ue.lua", "eproads/2_lane_oneway_ue.lua", "eproads/3_lane_oneway_ue.lua"}
+            roadList2way = {"eproads/4_lane_twoway_cr.lua", "eproads/6_lane_twoway_cr.lua", "eproads/8_lane_twoway_cr.lua"}
+            moduleStringList1 = {"depot/eproads_1_1.0_12_hw.mdl", "depot/eproads_2_1.0_12_hw.mdl"}
+            moduleStringList2 = {"depot/eproads_1_0_12_hw.mdl", "depot/eproads_2_0_12_hw.mdl", "depot/eproads_3_0_12_hw.mdl"}
+            moduleStringList3 = {"depot/eproads_2_0.5_6_hw.mdl", "depot/eproads_3_0.5_6_hw.mdl", "depot/eproads_4_0.5_6_hw.mdl"}
+
+            if params.eproads_configure == 0 then
+                xflip = 1
+            else
+                xflip = -1
+            end
+
+            n = 9
+
+            if params.eproads_modulechoice == 0 then
+                laneChoiceGround = 1
+                laneChoiceue = 1
+                laneChoice2way = 1
+            elseif params.eproads_modulechoice == 1 then
+                laneChoiceGround = 2
+                laneChoiceue = 1
+                laneChoice2way = 2
+            elseif params.eproads_modulechoice == 2 then
+                laneChoiceGround = 1
+                laneChoiceue = 2
+                laneChoice2way = 2
+            elseif params.eproads_modulechoice == 3 then
+                laneChoiceGround = 2
+                laneChoiceue = 2
+                laneChoice2way = 3
+            elseif params.eproads_modulechoice == 4 then
+                laneChoiceGround = 1
+                laneChoiceue = 3
+                laneChoice2way = 3
+            end
+
+            groundFaceName = "headquarter_era_a_01.lua"
+            roadName = {roadListGround[laneChoiceGround], roadListue[laneChoiceue], roadList2way[laneChoice2way]}
+            moduleString = {moduleStringList1[laneChoiceGround], moduleStringList2[laneChoiceue], moduleStringList3[laneChoice2way]}
+            centreString = {"depot/centre_1.0_12.mdl", "depot/centre_1.0_6.mdl"}
+            pedString = "depot/ped_1.5_18.mdl"
+            side = 2.3+3.6*(laneChoiceGround+laneChoiceue)
+            xdisplace = 0.5+3.6*laneChoiceue
+            x = {xdisplace+1+1.8*laneChoiceGround, 0.5+1.8*laneChoiceue}
+
+            len = 1 + params.eproads_length * 0.1
+            n = n*len
+
+            result.models[#result.models + 1] = {id = moduleString[1], transf = { 1, 0, 0, 0, 0, len, 0, 0, 0, 0, 1, 0, xdisplace, n/3, 0, 1, },}
+            result.models[#result.models + 1] = {id = centreString[1], transf = { 1, 0, 0, 0, 0, len, 0, 0, 0, 0, 1, 0, xdisplace, n/3, 0, 1, },}
+            result.models[#result.models + 1] = {id = moduleString[2], transf = { 1, 0, 0, 0, 0, len, 0, 0, 0, 0, 1, 0, xdisplace, n/3, 0, 1, },}
+            result.models[#result.models + 1] = {id = moduleString[1], transf = { -1, 0, 0, 0, 0, len, 0, 0, 0, 0, 1, 0, -xdisplace, n/3, 0, 1, },}
+            result.models[#result.models + 1] = {id = centreString[1], transf = { -1, 0, 0, 0, 0, len, 0, 0, 0, 0, 1, 0, -xdisplace, n/3, 0, 1, },}
+            result.models[#result.models + 1] = {id = moduleString[2], transf = { -1, 0, 0, 0, 0, len, 0, 0, 0, 0, 1, 0, -xdisplace, n/3, 0, 1, },}
+            result.models[#result.models + 1] = {id = moduleString[3], transf = { 1, 0, 0, 0, 0, len, 0, 0, 0, 0, 1, 0, 0, -2*n/3, 0, 1, },}
+            result.models[#result.models + 1] = {id = centreString[2], transf = { 1, 0, 0, 0, 0, len, 0, 0, 0, 0, 1, 0, 0, -2*n/3, 0, 1, },}
+            result.models[#result.models + 1] = {id = moduleString[3], transf = { -1, 0, 0, 0, 0, len, 0, 0, 0, 0, 1, 0, 0, -2*n/3, 0, 1, },}
+            result.models[#result.models + 1] = {id = pedString, transf = { 1, 0, 0, 0, 0, len, 0, 0, 0, 0, 1, 0, 3.6*(laneChoice2way+1), 0, 0, 1, },}
+            result.models[#result.models + 1] = {id = pedString, transf = { -1, 0, 0, 0, 0, len, 0, 0, 0, 0, 1, 0, -3.6*(laneChoice2way+1), 0, 0, 1, },}
+
+            result.groundFaces = {{
+                face = {{-side, -n-1}, {side, -n-1}, {side, n}, {-side, n}},
+                modes = {{type = "FILL", key = groundFaceName}}
+            }}
+
+            result.edgeLists[#result.edgeLists + 1] = {type = "STREET", params = {type = roadName[1], }, edges = {{{x[1]*xflip, n, 0}, {0, 2, 0}}, {{x[1]*xflip, n+2, 0}, {0, 2, 0}}, }, snapNodes = SN1[2], freeNodes = FN1[2],}
+            result.edgeLists[#result.edgeLists + 1] = {type = "STREET", params = {type = roadName[2], }, edges = {{{x[2]*xflip, n, 0}, {0, 2, 0}}, {{x[2]*xflip, n+2, 0}, {0, 2, 0}}, }, snapNodes = SN2[2], freeNodes = FN2[2],}
+            result.edgeLists[#result.edgeLists + 1] = {type = "STREET", params = {type = roadName[1], }, edges = {{{-x[1]*xflip, n+2, 0}, {0, -2, 0}}, {{-x[1]*xflip, n, 0}, {0, -2, 0}}, }, snapNodes = SN3[1], freeNodes = FN3[1],}
+            result.edgeLists[#result.edgeLists + 1] = {type = "STREET", params = {type = roadName[2], }, edges = {{{-x[2]*xflip, n+2, 0}, {0, -2, 0}}, {{-x[2]*xflip, n, 0}, {0, -2, 0}}, }, snapNodes = SN4[1], freeNodes = FN4[1],}
+            result.edgeLists[#result.edgeLists + 1] = {type = "STREET", params = {type = roadName[3], }, edges = {{{0, -n, 0}, {0, -2, 0}}, {{0, -n-2, 0}, {0, -2, 0}}, }, snapNodes = SN5[2], freeNodes = FN5[2],}
+            result.terrainAlignmentLists = { {type = "EQUAL", faces = {{{-side, -n-1, -0.1}, {side, -n-1, -0.1}, {side, n+1, -0.1}, {-side, n+1, -0.1}}}, slopeLow = 0.8, slopeHigh = 0.8, }, }
+
+            result.cost = -1
+            return result
+        end
+    }
+    end

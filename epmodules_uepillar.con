@@ -1,0 +1,74 @@
+function data()
+    return {
+        type = "STREET_CONSTRUCTION",
+        description = {
+            name = _("TFMR modules Urban Expwy Pillar"),
+            description = _(" "),
+        },
+        availability = {
+            yearFrom = 1920,
+            yearTo = 9999
+        },
+        skipCollision = true,
+        params = {
+            {key = "eproads_groundlane1", name = "Ground Lanes 1", values = {_("1 lane"), _("2 lane"), _("3 lane"), _("4 lane")}, },
+            {key = "eproads_groundlane2", name = "Ground Lanes 2", values = {_("1 lane"), _("2 lane"), _("3 lane"), _("4 lane")}, },
+            {key = "eproads_elevatedlane1", name = "Elevated Lanes 1", values = {_("1 lane"), _("2 lane"), _("3 lane"), _("4 lane")}, },
+            {key = "eproads_elevatedlane2", name = "Elevated Lanes 2", values = {_("1 lane"), _("2 lane"), _("3 lane"), _("4 lane")}, },
+            {key = "eproads_configure", name = "Module Configuration", values = {_("Right"), _("Left")}, },
+            {key = "eproads_slope", name = "Slope", uiType = "SLIDER", values = {_("-20%"), _("-15%"), _("-10%"), _("5%"), _("0%"), _("5%"), _("10%"), _("15%"), _("20%")}, defaultIndex = 4, },
+            {key = "eproads_height", name = "Elevated Road Height",uiType = "SLIDER", values = {_("12"), _("14"), _("16"), _("18"), _("20"), _("22"), _("24")}, },
+        },
+        updateFn = function(params)
+            local result = { }
+            local r1, r2, SL, roadListGround, roadListElevated, xflip, laneChoiceGround1, laneChoiceGround2, laneChoiceElevated1, laneChoiceElevated2, h, x, roadName, l, pillarName
+    
+            result.edgeLists = { }
+            result.models = { }
+                
+            r1 = {0.980, 0.989, 0.995, 0.999, 1.000, 0.999, 0.995, 0.989, 0.980}
+            r2 = {-0.200, -0.150, -0.100, -0.050, -0.000, 0.050, 0.100, 0.150, 0.200}
+            SL = params.eproads_slope + 1
+            roadListGround = {"eproads/1_lane_oneway_cr.lua", "eproads/2_lane_oneway_cr.lua", "eproads/3_lane_oneway_cr.lua", "eproads/4_lane_oneway_cr.lua"}
+            roadListElevated = {"eproads/1_lane_oneway_ue.lua", "eproads/2_lane_oneway_ue.lua", "eproads/3_lane_oneway_ue.lua", "eproads/4_lane_oneway_ue.lua"}
+
+            if params.eproads_configure == 0 then
+                xflip = 1
+            else                
+                xflip = -1
+            end
+
+            laneChoiceGround1 = params.eproads_groundlane1 + 1
+            laneChoiceGround2 = params.eproads_groundlane2 + 1
+            laneChoiceElevated1 = params.eproads_elevatedlane1 + 1
+            laneChoiceElevated2 = params.eproads_elevatedlane2 + 1
+            h = params.eproads_height*2+12
+            x = {4.8+1.8*laneChoiceGround1, -4.8-1.8*laneChoiceGround2, 0.5+1.8*laneChoiceElevated1, -0.5-1.8*laneChoiceElevated2}
+            roadName = {roadListGround[laneChoiceGround1], roadListGround[laneChoiceGround2], roadListElevated[laneChoiceElevated1], roadListElevated[laneChoiceElevated2]}
+            if h <= 10 then
+                l = 16
+            else
+                l = 2
+            end
+
+
+            if params.eproads_elevatedlane1 >= 2 or params.eproads_elevatedlane2 >= 2 then
+                pillarName = "depot/eproads_pillar_uewide_module.mdl"
+            else
+                pillarName = "depot/eproads_pillar_thick_module.mdl"
+            end
+
+            result.models[#result.models + 1] = {id = pillarName, transf = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, h, 1, },}
+            result.edgeLists[#result.edgeLists + 1] = {type = "STREET", params = {type = roadName[1], }, edges = {{{x[1]*xflip, -1, 0}, {0, 2, 0}}, {{x[1]*xflip, 1, 0}, {0, 2, 0}}, }, snapNodes = {}, freeNodes = {0, 1},}
+            result.edgeLists[#result.edgeLists + 1] = {type = "STREET", params = {type = roadName[2], }, edges = {{{x[2]*xflip, 1, 0}, {0, -2, 0}}, {{x[2]*xflip, -1, 0}, {0, -2, 0}}, }, snapNodes = {}, freeNodes = {0, 1},}
+            result.edgeLists[#result.edgeLists + 1] = {type = "STREET", params = {type = roadName[3], }, edgeType = "BRIDGE", edgeTypeName = "epbridge_no_pillar.lua", edges = {{{x[3]*xflip, -l/2*r1[SL], h-l/2*r2[SL]}, {0, l*r1[SL], l*r2[SL]}}, {{x[3]*xflip, l/2*r1[SL], h+l/2*r2[SL]}, {0, l*r1[SL], l*r2[SL]}}, }, snapNodes = {}, freeNodes = {0, 1},}
+            result.edgeLists[#result.edgeLists + 1] = {type = "STREET", params = {type = roadName[4], }, edgeType = "BRIDGE", edgeTypeName = "epbridge_no_pillar.lua", edges = {{{x[4]*xflip, l/2*r1[SL], h+l/2*r2[SL]}, {0, -l*r1[SL], -l*r2[SL]}}, {{x[4]*xflip, -l/2*r1[SL], h-l/2*r2[SL]}, {0, -l*r1[SL], -l*r2[SL]}}, }, snapNodes = {}, freeNodes = {0, 1},}
+            result.edgeLists[#result.edgeLists + 1] = {type = "TRACK", params = {type = "standard.lua", }, edges = {{{(9.2+laneChoiceGround1*3.6)*xflip, -1, 0}, {0, 2, 0}}, {{(9.2+laneChoiceGround1*3.6)*xflip, 1, 0}, {0, 2, 0}}, }, snapNodes = {0, 1}, freeNodes = {0, 1}, }   
+            result.edgeLists[#result.edgeLists + 1] = {type = "TRACK", params = {type = "standard.lua", }, edges = {{{(-9.2-laneChoiceGround2*3.6)*xflip, -1, 0}, {0, 2, 0}}, {{(-9.2-laneChoiceGround2*3.6)*xflip, 1, 0}, {0, 2, 0}}, }, snapNodes = {0, 1}, freeNodes = {0, 1}, }   
+            result.terrainAlignmentLists = { {type = "EQUAL", faces = { } } }
+
+            result.cost = -1
+            return result
+        end
+    }
+    end
